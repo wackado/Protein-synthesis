@@ -1,12 +1,3 @@
-Got it! Since artifacts aren’t rendering for you, I’ll provide the HTML code that you can copy and save as a file to run locally. Here’s the complete protein synthesis adventure:
-
-**Instructions:**
-
-1. Copy the code below
-1. Save it as a file named `protein_synthesis.html`
-1. Double-click the file to open it in your web browser
-
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
