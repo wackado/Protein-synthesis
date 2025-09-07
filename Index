@@ -1,718 +1,450 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Protein Synthesis Adventure</title>
-    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Raleway', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 900px;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-        
-        .header {
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-        
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-        
-        .content {
-            padding: 30px;
-        }
-        
-        .progress-bar {
-            height: 8px;
-            background: rgba(0,0,0,0.1);
-            border-radius: 4px;
-            margin: 20px 0;
-            overflow: hidden;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(45deg, #4ecdc4, #44a08d);
-            border-radius: 4px;
-            transition: width 0.5s ease;
-            width: 0%;
-        }
-        
-        .step {
-            display: none;
-            text-align: center;
-        }
-        
-        .step.active {
-            display: block;
-            animation: fadeIn 0.8s ease-in-out;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .visual {
-            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-            border-radius: 15px;
-            padding: 30px;
-            margin: 20px 0;
-            min-height: 250px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .cell-diagram {
-            position: relative;
-            width: 320px;
-            height: 220px;
-            margin: 0 auto;
-        }
-        
-        .cell-outline {
-            width: 100%;
-            height: 100%;
-            border: 4px solid #333;
-            border-radius: 50px;
-            position: relative;
-            background: rgba(255,255,255,0.1);
-        }
-        
-        .nucleus {
-            width: 150px;
-            height: 120px;
-            border: 3px solid #ff6b6b;
-            border-radius: 50%;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(255,107,107,0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .dna {
-            font-size: 2.5em;
-            animation: spin 15s linear infinite;
-        }
-        
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        
-        .nuclear-pore {
-            width: 8px;
-            height: 8px;
-            background: #ff6b6b;
-            border-radius: 50%;
-            position: absolute;
-        }
-        
-        .ribosome {
-            font-size: 12px;
-            position: absolute;
-        }
-        
-        .label {
-            position: absolute;
-            background: rgba(255,255,255,0.9);
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.8em;
-            font-weight: bold;
-        }
-        
-        .nucleus-label {
-            background: rgba(255,107,107,0.9);
-            color: white;
-        }
-        
-        .prompt {
-            background: rgba(255, 255, 255, 0.9);
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
-            font-weight: 600;
-            color: #333;
-            border-left: 5px solid #ff6b6b;
-        }
-        
-        .choices {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
-        }
-        
-        .choice {
-            padding: 15px 20px;
-            border: 3px solid #4ecdc4;
-            background: white;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: inherit;
-            font-size: 1em;
-            font-weight: 600;
-        }
-        
-        .choice:hover {
-            background: #4ecdc4;
-            color: white;
-            transform: translateY(-2px);
-        }
-        
-        .choice.correct {
-            border-color: #28a745;
-            background: #28a745;
-            color: white;
-            animation: pulse 0.6s;
-        }
-        
-        .choice.incorrect {
-            border-color: #dc3545;
-            background: #dc3545;
-            color: white;
-            animation: shake 0.6s;
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-        
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
-        
-        .feedback {
-            background: rgba(40, 167, 69, 0.1);
-            border: 2px solid #28a745;
-            border-radius: 10px;
-            padding: 15px;
-            margin: 15px 0;
-            font-weight: 600;
-            color: #155724;
-            display: none;
-        }
-        
-        .feedback.show {
-            display: block;
-            animation: slideIn 0.5s ease-out;
-        }
-        
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .description {
-            font-size: 1.1em;
-            line-height: 1.6;
-            color: #333;
-            margin: 20px 0;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.8);
-            border-radius: 10px;
-            border-left: 5px solid #4ecdc4;
-            display: none;
-        }
-        
-        .nav-btn {
-            padding: 12px 30px;
-            border: none;
-            border-radius: 25px;
-            font-size: 1.1em;
-            cursor: pointer;
-            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
-            color: white;
-            font-family: inherit;
-            font-weight: bold;
-            margin: 10px;
-            transition: all 0.3s ease;
-            display: none;
-        }
-        
-        .nav-btn.show {
-            display: inline-block;
-        }
-        
-        .nav-btn:hover {
-            transform: translateY(-2px);
-        }
-        
-        .back-btn {
-            background: #6c757d;
-        }
-        
-        .base-matching {
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 20px;
-            margin: 20px 0;
-        }
-        
-        .base-pair {
-            text-align: center;
-        }
-        
-        .base {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5em;
-            font-weight: bold;
-            margin: 0 auto 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .base.dna {
-            background: #667eea;
-            color: white;
-        }
-        
-        .base.rna {
-            background: #ff6b6b;
-            color: white;
-            border: 3px solid transparent;
-        }
-        
-        .base.rna:hover {
-            transform: scale(1.1);
-        }
-        
-        .base.rna.selected {
-            border-color: #28a745;
-            box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
-        }
-        
-        .draggable {
-            padding: 10px 15px;
-            background: #4ecdc4;
-            color: white;
-            border-radius: 8px;
-            cursor: grab;
-            margin: 5px;
-            display: inline-block;
-            font-weight: 600;
-            user-select: none;
-            transition: opacity 0.3s ease;
-        }
-        
-        .draggable:active {
-            cursor: grabbing;
-        }
-        
-        .drag-area {
-            min-height: 100px;
-            border: 3px dashed #4ecdc4;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 15px 0;
-            transition: all 0.3s ease;
-            background: rgba(255, 255, 255, 0.5);
-            padding: 10px;
-            flex-wrap: wrap;
-        }
-        
-        .drag-area.drag-over {
-            border-color: #ff6b6b;
-            background: rgba(255, 107, 107, 0.1);
-        }
-        
-        .quiz-container {
-            display: none;
-        }
-        
-        .quiz-container.active {
-            display: block;
-        }
-        
-        .question {
-            background: rgba(255, 255, 255, 0.9);
-            padding: 20px;
-            border-radius: 15px;
-            margin: 15px 0;
-            border-left: 5px solid #ff6b6b;
-        }
-        
-        .question h3 {
-            color: #333;
-            margin-bottom: 15px;
-            font-size: 1.2em;
-        }
-        
-        .options {
-            display: grid;
-            gap: 10px;
-        }
-        
-        .option {
-            padding: 10px 15px;
-            background: white;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .option:hover {
-            border-color: #4ecdc4;
-            background: rgba(78, 205, 196, 0.1);
-        }
-        
-        .option.selected {
-            border-color: #4ecdc4;
-            background: rgba(78, 205, 196, 0.2);
-        }
-        
-        .option.correct {
-            border-color: #28a745;
-            background: rgba(40, 167, 69, 0.2);
-        }
-        
-        .option.incorrect {
-            border-color: #dc3545;
-            background: rgba(220, 53, 69, 0.2);
-        }
-        
-        .quiz-results {
-            text-align: center;
-            padding: 20px;
-            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-            border-radius: 15px;
-            margin: 20px 0;
-        }
-        
-        .score {
-            font-size: 2em;
-            font-weight: bold;
-            color: #333;
-            margin: 10px 0;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>🧬 Cellular Adventure: Protein Synthesis Journey!</h1>
-            <p>Shrink down and explore the amazing world inside a living cell!</p>
-        </div>
-        
-        <div class="content">
-            <div class="progress-bar">
-                <div class="progress-fill"></div>
-            </div>
-            
-            <!-- Step 1: DNA in Nucleus -->
-            <div class="step active" data-step="1">
-                <div class="visual">
-                    <div class="cell-diagram">
-                        <div class="cell-outline">
-                            <!-- Nucleus -->
-                            <div class="nucleus">
-                                <div class="dna">🧬</div>
-                            </div>
-                            
-                            <!-- Nuclear pores -->
-                            <div class="nuclear-pore" style="top: 30%; left: 20%;"></div>
-                            <div class="nuclear-pore" style="top: 70%; right: 20%;"></div>
-                            <div class="nuclear-pore" style="bottom: 40%; left: 15%;"></div>
-                            
-                            <!-- Ribosomes in cytoplasm -->
-                            <div class="ribosome" style="top: 20%; right: 30%;">🔴</div>
-                            <div class="ribosome" style="bottom: 25%; right: 40%;">🔴</div>
-                            <div class="ribosome" style="top: 60%; left: 25%;">🔴</div>
-                        </div>
-                        
-                        <!-- Labels -->
-                        <div class="label" style="top: 10px; left: 50%; transform: translateX(-50%);">Cell</div>
-                        <div class="label nucleus-label" style="top: 30%; left: 50%; transform: translateX(-50%);">Nucleus</div>
-                        <div class="label" style="bottom: 20px; right: 20px;">Cytoplasm</div>
-                    </div>
-                </div>
-                
-                <div class="prompt">
-                    You're a nitrogenous base on DNA! Look around - where do you think you are in the cell?
-                </div>
-                
-                <div class="choices">
-                    <button class="choice" onclick="makeChoice(1, false, 'The cytoplasm is where proteins are made, but DNA lives elsewhere!')">Cytoplasm</button>
-                    <button class="choice" onclick="makeChoice(1, true, 'Exactly! DNA is safely stored in the nucleus, protected by the nuclear envelope!')">Nucleus</button>
-                    <button class="choice" onclick="makeChoice(1, false, 'Mitochondria have some DNA, but most genes are in the nucleus!')">Mitochondria</button>
-                </div>
-                
-                <div class="feedback" id="feedback-1"></div>
-                
-                <div class="description" id="description-1">
-                    <h2>🎯 Welcome to the Nucleus!</h2>
-                    <p><strong>Perfect choice!</strong> You are a <strong>nitrogenous base</strong> on a DNA strand in the nucleus! Think of DNA as the cell's recipe book 📚. Each recipe (gene) tells the cell how to make a specific protein. Just like a cookbook stays in the kitchen while you make copies of recipes to share, DNA stays safely in the nucleus while copies (mRNA) are made to carry instructions out to the ribosomes!</p>
-                    <p>🔍 <strong>Fun Fact:</strong> If you stretched out all the DNA in one human cell, it would be about 6 feet long!</p>
-                </div>
-                
-                <div style="text-align: center; margin-top: 20px;">
-                    <button class="nav-btn back-btn" id="back-1" onclick="previousStep()" style="display: none;">Back</button>
-                    <button class="nav-btn" id="next-1" onclick="nextStep()">Continue the Journey</button>
-                </div>
-            </div>
-            
-            <!-- Step 2: What Binds to Promoter -->
-            <div class="step" data-step="2">
-                <div class="visual">
-                    <div style="position: relative; display: flex; flex-direction: column; align-items: center;">
-                        <div style="font-size: 3em; margin-bottom: 20px;">
-                            🧬━━━━━━━━━━━━━━━━━━━━━━━🧬
-                        </div>
-                        <div style="position: absolute; top: 50%; left: 30%; transform: translate(-50%, -50%); background: #ff6b6b; color: white; padding: 8px 12px; border-radius: 5px; font-weight: bold; font-size: 0.9em;">
-                            PROMOTER
-                        </div>
-                    </div>
-                    <div class="prompt">
-                        Here's unwound DNA with the promoter region highlighted. What enzyme needs to bind here to start copying the gene?
-                    </div>
-                </div>
-                <div class="choices">
-                    <button class="choice" onclick="makeChoice(2, false, 'DNA polymerase copies DNA during replication, not transcription!')">DNA polymerase</button>
-                    <button class="choice" onclick="makeChoice(2, true, 'Perfect! RNA polymerase is the enzyme that reads DNA and makes RNA copies!')">RNA polymerase</button>
-                    <button class="choice" onclick="makeChoice(2, false, 'DNA ligase joins DNA fragments together, but does not transcribe genes!')">DNA ligase</button>
-                </div>
-                <div class="feedback" id="feedback-2"></div>
-                <div class="description" id="description-2">
-                    <h2>🔍 RNA Polymerase is the Key!</h2>
-                    <p><strong>Excellent!</strong> <strong>RNA polymerase</strong> is the essential enzyme that must bind to the promoter region before transcription can begin. Think of the promoter as a "Start Here" sign that RNA polymerase recognizes. Once bound, RNA polymerase will unwind the DNA double helix and start reading the template strand to create an mRNA copy!</p>
-                    <p>🔍 <strong>Fun fact:</strong> In humans, there are three types of RNA polymerase, but RNA polymerase II is the one that transcribes protein-coding genes!</p>
-                </div>
-                <div style="text-align: center; margin-top: 20px;">
-                    <button class="nav-btn back-btn" id="back-2" onclick="previousStep()">Back</button>
-                    <button class="nav-btn" id="next-2" onclick="nextStep()">Watch RNA Polymerase in Action</button>
-                </div>
-            </div>
-            
-            <!-- Step 3: Base Pairing -->
-            <div class="step" data-step="3">
-                <div class="visual">
-                    <div style="font-size: 4em; margin-bottom: 20px;">🧲</div>
-                    <div class="prompt">
-                        Help RNA polymerase! Click the correct RNA base that pairs with each DNA base:
-                    </div>
-                    <div class="base-matching">
-                        <div class="base-pair">
-                            <div class="base dna">A</div>
-                            <div>DNA</div>
-                        </div>
-                        <div style="font-size: 2em; color: #4ecdc4;">↔</div>
-                        <div class="base-pair">
-                            <div class="base rna" onclick="selectBase(this, 'U', true)">U</div>
-                            <div class="base rna" onclick="selectBase(this, 'A', false)">A</div>
-                            <div class="base rna" onclick="selectBase(this, 'C', false)">C</div>
-                            <div>RNA</div>
-                        </div>
-                    </div>
-                    <div id="base-feedback" style="text-align: center; margin: 20px 0; font-weight: bold;"></div>
-                </div>
-                <div class="feedback" id="feedback-3"></div>
-                <div class="description" id="description-3">
-                    <h2>🧲 Perfect Base Pairing!</h2>
-                    <p><strong>You've got it!</strong> RNA polymerase reads the DNA template and creates a complementary <strong>mRNA strand</strong>! Remember the key difference: RNA does not have the base Thymine - it has Uracil instead. So A pairs with U, T pairs with A, G pairs with C, and C pairs with G. It's like taking dictation with a different alphabet!</p>
-                    <p>🔍 <strong>Key fact:</strong> RNA uses Uracil (U) instead of Thymine (T) because it's easier for the cell to make and RNA is temporary!</p>
-                </div>
-                <div style="text-align: center; margin-top: 20px;">
-                    <button class="nav-btn back-btn" id="back-3" onclick="previousStep()">Back</button>
-                    <button class="nav-btn" id="next-3" onclick="nextStep()">What Happens Next?</button>
-                </div>
-            </div>
-            
-            <!-- Step 4: What Happens Next -->
-            <div class="step" data-step="4">
-                <div class="visual">
-                    <div style="font-size: 4em; margin-bottom: 20px;">🧬➡️📝</div>
-                    <div class="prompt">
-                        Great! You've made a fresh mRNA copy. What happens to this newly made mRNA before it can be used?
-                    </div>
-                </div>
-                <div class="choices">
-                    <button class="choice" onclick="makeChoice(4, false, 'The mRNA isn\'t ready yet - it needs processing first!')">It immediately leaves the nucleus</button>
-                    <button class="choice" onclick="makeChoice(4, true, 'Exactly! The raw mRNA must be processed before it can be used!')">It gets processed and edited</button>
-                    <button class="choice" onclick="makeChoice(4, false, 'Ribosomes are in the cytoplasm, but mRNA must be processed first!')">It goes directly to ribosomes</button>
-                </div>
-                <div class="feedback" id="feedback-4"></div>
-                <div class="description" id="description-4">
-                    <h2>📝 Processing Required!</h2>
-                    <p><strong>Perfect reasoning!</strong> The freshly made mRNA is like a rough draft that needs editing before it can be used. In eukaryotic cells, the raw mRNA transcript must undergo <strong>processing</strong> - removing unnecessary parts (introns) and keeping the important coding parts (exons). This ensures only the correct genetic information gets translated into protein!</p>
-                    <p>🔍 <strong>Why processing matters:</strong> Without proper processing, the mRNA would contain "junk" sequences that would make a defective protein!</p>
-                </div>
-                <div style="text-align: center; margin-top: 20px;">
-                    <button class="nav-btn back-btn" id="back-4" onclick="previousStep()">Back</button>
-                    <button class="nav-btn" id="next-4" onclick="nextStep()">Start RNA Processing</button>
-                </div>
-            </div>
-            
-            <!-- Step 5: RNA Processing -->
-            <div class="step" data-step="5">
-                <div class="visual">
-                    <div style="font-size: 4em; margin-bottom: 20px;">✂️</div>
-                    <div class="prompt">
-                        Your fresh mRNA needs editing! Drag the parts you want to KEEP into the "Final mRNA" box:
-                    </div>
-                    <div style="margin: 20px 0;">
-                        <div style="margin-bottom: 10px; font-weight: bold;">Raw mRNA parts:</div>
-                        <div class="draggable" draggable="true" ondragstart="dragStart(event)" data-keep="false">Intron 1 (junk)</div>
-                        <div class="draggable" draggable="true" ondragstart="dragStart(event)" data-keep="true">Exon 1 (coding)</div>
-                        <div class="draggable" draggable="true" ondragstart="dragStart(event)" data-keep="false">Intron 2 (junk)</div>
-                        <div class="draggable" draggable="true" ondragstart="dragStart(event)" data-keep="true">Exon 2 (coding)</div>
-                        <div class="draggable" draggable="true" ondragstart="dragStart(event)" data-keep="true">Exon 3 (coding)</div>
-                    </div>
-                    <div class="drag-area" id="mRNA-box" ondrop="drop(event)" ondragover="allowDrop(event)" ondragleave="dragLeave(event)">
-                        <div id="drop-instruction" style="color: #666;">Drag the parts to keep here!</div>
-                    </div>
-                    <div id="processing-feedback" style="text-align: center; margin: 10px 0; font-weight: bold;"></div>
-                </div>
-                <div class="feedback" id="feedback-5"></div>
-                <div class="description" id="description-5">
-                    <h2>✂️ Perfect RNA Processing!</h2>
-                    <p><strong>Excellent editing skills!</strong> You kept only the <strong>exons</strong> (coding sequences) and removed the <strong>introns</strong> (non-coding junk)! Plus, the cell adds a <strong>5' cap</strong> (like a protective hat) and a <strong>poly-A tail</strong> (like a long scarf) to protect the mRNA during its journey!</p>
-                    <p>🔍 <strong>Fun analogy:</strong> It's like editing a movie - cut out the boring scenes, keep the good parts, and add opening and closing credits!</p>
-                </div>
-                <div style="text-align: center; margin-top: 20px;">
-                    <button class="nav-btn back-btn" id="back-5" onclick="previousStep()">Back</button>
-                    <button class="nav-btn" id="next-5" onclick="nextStep()" style="display: none;">Continue Adventure</button>
-                </div>
-            </div>
-            
-            <!-- Quiz Section -->
-            <div class="quiz-container" id="quizContainer">
-                <h2 style="text-align: center; margin-bottom: 30px;">🧠 Test Your Knowledge! 🧠</h2>
-                <div id="questionsContainer"></div>
-                <div class="quiz-results" id="quizResults" style="display: none;">
-                    <h3>🎉 Quiz Complete! 🎉</h3>
-                    <div class="score" id="finalScore"></div>
-                    <p id="scoreMessage"></p>
-                </div>
-            </div>
-        </div>
-    </div>
+import React, { useState } from ‘react’;
 
-    <script>
-        let currentStep = 1;
-        const totalSteps = 5;
-        let quizStarted = false;
-        let currentQuestion = 0;
-        let score = 0;
-        let userAnswers = [];
-        let correctChoices = 0;
-        let basePairingComplete = false;
-        let processingComplete = false;
-        
-        const questions = [
-            {
-                question: "Where does transcription take place in eukaryotic cells?",
-                options: ["Cytoplasm", "Nucleus", "Ribosome", "Mitochondria"],
-                correct: 1,
-                explanation: "Transcription occurs in the nucleus where DNA is located!"
-            },
-            {
-                question: "What enzyme is responsible for making mRNA from DNA?",
-                options: ["DNA polymerase", "RNA polymerase", "Ligase", "Helicase"],
-                correct: 1,
-                explanation: "RNA polymerase is like the cell's photocopier for making RNA copies!"
-            },
-            {
-                question: "In RNA, which base pairs with Adenine (A)?",
-                options: ["Thymine (T)", "Guanine (G)", "Uracil (U)", "Cytosine (C)"],
-                correct: 2,
-                explanation: "Remember: RNA uses Uracil (U) instead of Thymine (T)!"
-            },
-            {
-                question: "What are introns?",
-                options: ["Coding sequences", "Non-coding sequences that are removed", "Start codons", "Stop codons"],
-                correct: 1,
-                explanation: "Introns are the 'junk' parts that get cut out during mRNA processing!"
-            },
-            {
-                question: "Why does RNA use Uracil instead of Thymine?",
-                options: ["It's more stable", "It's easier for the cell to make", "It pairs better", "It's smaller"],
-                correct: 1,
-                explanation: "RNA uses Uracil because it's easier to make and RNA is temporary!"
-            }
-        ];
-        
-        function makeChoice(step, isCorrect, feedback) {
-            const buttons = document.querySelectorAll(`[data-step="${step}"] .choice`);
-            const feedbackEl = document.getElementById(`feedback-${step}`);
-            const descriptionEl = document.getElementById(`description-${step}`);
-            const nextBtn = document.getElementById(`next-${step}`);
-            
-            buttons.forEach(btn => {
-                btn.disabled = true;
-                if (btn.onclick.toString().includes('true')) {
-                    btn.classList.add('correct');
-                } else if (btn === event.target && !isCorrect) {
-                    btn.classList.add('incorrect');
-                }
-            });
-            
-            feedbackEl.textContent = feedback;
-            feedbackEl.classList.add('show');
-            
-            if (isCorrect) {
-                correctChoices++;
-                setTimeout(() => {
-                    descriptionEl.style.display = 'block';
-                    nextBtn.classList.add('show');
-                    nextBtn.style.display = 'inline-block';
-                    updateProgress();
-                }, 1500);
-            } else {
-                setTimeout(() => {
-                    buttons.forEach(btn => {
-                        btn.disabled = false;
-                        btn.classList.remove('correct', 'incorrect');
-                    });
-                    feedbackEl.classList.remove('show');
-                }, 2000);
-            }
-        }
-        
-        function​​​​​​​​​​​​​​​​
+const ProteinSynthesisApp = () => {
+const [currentStep, setCurrentStep] = useState(1);
+const [correctChoices, setCorrectChoices] = useState(0);
+const [feedback, setFeedback] = useState(’’);
+const [showDescription, setShowDescription] = useState(false);
+const [showNext, setShowNext] = useState(false);
+const [selectedChoices, setSelectedChoices] = useState({});
+const [completedSteps, setCompletedSteps] = useState(new Set());
+const [rnaPolymerasePosition, setRnaPolymerasePosition] = useState({ x: 20, y: 50 });
+const [isDragging, setIsDragging] = useState(false);
+const [hasFoundPromoter, setHasFoundPromoter] = useState(false);
+
+const makeChoice = (step, isCorrect, feedbackText) => {
+setFeedback(feedbackText);
+setSelectedChoices(prev => ({ …prev, [step]: isCorrect }));
+
 ```
+if (isCorrect) {
+  setCorrectChoices(prev => prev + 1);
+  setCompletedSteps(prev => new Set([...prev, step]));
+  setTimeout(() => {
+    setShowDescription(true);
+    setShowNext(true);
+  }, 1500);
+} else {
+  setTimeout(() => {
+    setFeedback('');
+    setSelectedChoices(prev => ({ ...prev, [step]: null }));
+  }, 2000);
+}
+```
+
+};
+
+const handleMouseMove = (e) => {
+if (isDragging && currentStep === 1.5) {
+const rect = e.currentTarget.getBoundingClientRect();
+const x = ((e.clientX - rect.left) / rect.width) * 100;
+const y = ((e.clientY - rect.top) / rect.height) * 100;
+setRnaPolymerasePosition({
+x: Math.max(5, Math.min(95, x)),
+y: Math.max(5, Math.min(95, y))
+});
+
+```
+  // Check if RNA polymerase is near the promoter (center area)
+  if (x > 45 && x < 55 && y > 45 && y < 55 && !hasFoundPromoter) {
+    setHasFoundPromoter(true);
+    setFeedback('🎉 Perfect! RNA polymerase has found the promoter! Transcription can now begin!');
+    setCorrectChoices(prev => prev + 1);
+    setCompletedSteps(prev => new Set([...prev, 1.5]));
+    setIsDragging(false);
+    setTimeout(() => {
+      setShowDescription(true);
+      setShowNext(true);
+    }, 1500);
+  }
+}
+```
+
+};
+
+const nextStep = () => {
+if (currentStep === 1) {
+setCurrentStep(1.5);
+} else if (currentStep === 1.5) {
+setCurrentStep(2);
+} else if (currentStep < 4) {
+setCurrentStep(prev => prev + 1);
+}
+setFeedback(’’);
+setShowDescription(false);
+setShowNext(false);
+};
+
+const previousStep = () => {
+if (currentStep === 1.5) {
+setCurrentStep(1);
+setRnaPolymerasePosition({ x: 20, y: 50 });
+setHasFoundPromoter(false);
+} else if (currentStep === 2) {
+setCurrentStep(1.5);
+} else if (currentStep > 1) {
+setCurrentStep(prev => prev - 1);
+}
+setFeedback(’’);
+
+```
+const prevStep = currentStep === 1.5 ? 1 : currentStep === 2 ? 1.5 : currentStep - 1;
+if (completedSteps.has(prevStep)) {
+  setShowDescription(true);
+  setShowNext(true);
+} else {
+  setShowDescription(false);
+  setShowNext(false);
+}
+```
+
+};
+
+return (
+<div className="min-h-screen bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center p-4">
+<div className="max-w-4xl bg-white rounded-3xl shadow-2xl overflow-hidden">
+<div className="bg-gradient-to-r from-pink-500 to-teal-500 text-white p-8 text-center">
+<h1 className="text-4xl font-bold mb-4">🧬 Cellular Adventure: Protein Synthesis Journey!</h1>
+<p className="text-xl">Shrink down and explore the amazing world inside a living cell!</p>
+</div>
+
+```
+    <div className="p-6">
+      <div className="w-full bg-gray-200 rounded-full h-3 mb-6">
+        <div 
+          className="bg-gradient-to-r from-teal-500 to-green-500 h-3 rounded-full transition-all duration-500"
+          style={{ width: `${(correctChoices / 4) * 100}%` }}
+        ></div>
+      </div>
+
+      {/* Step 1: DNA in Nucleus */}
+      {currentStep === 1 && (
+        <div className="text-center space-y-6">
+          <div className="bg-gradient-to-br from-blue-100 to-pink-100 rounded-2xl p-8 min-h-64 flex flex-col items-center justify-center">
+            <div className="relative w-80 h-56 mb-6">
+              <div className="w-full h-full border-4 border-gray-800 rounded-3xl bg-white bg-opacity-20 relative">
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-36 h-28 border-4 border-pink-500 rounded-full bg-pink-200 bg-opacity-50 flex items-center justify-center">
+                  <div className="text-4xl animate-spin" style={{ animationDuration: '15s' }}>🧬</div>
+                </div>
+                <div className="absolute top-8 left-16 w-2 h-2 bg-pink-500 rounded-full"></div>
+                <div className="absolute bottom-8 right-16 w-2 h-2 bg-pink-500 rounded-full"></div>
+                <div className="absolute bottom-16 left-12 w-2 h-2 bg-pink-500 rounded-full"></div>
+                <div className="absolute top-5 right-24 text-xs">🔴</div>
+                <div className="absolute bottom-6 right-32 text-xs">🔴</div>
+                <div className="absolute top-32 left-20 text-xs">🔴</div>
+              </div>
+              <div className="absolute top-2 left-1/2 transform -translate-x-1/2 bg-white bg-opacity-90 px-2 py-1 rounded text-xs font-bold">Cell</div>
+              <div className="absolute top-16 left-1/2 transform -translate-x-1/2 bg-pink-500 text-white px-2 py-1 rounded text-xs font-bold">Nucleus</div>
+              <div className="absolute bottom-4 right-4 bg-white bg-opacity-90 px-2 py-1 rounded text-xs font-bold">Cytoplasm</div>
+            </div>
+          </div>
+
+          <div className="bg-white bg-opacity-90 p-6 rounded-xl border-l-4 border-pink-500">
+            <p className="text-lg font-semibold text-gray-800">
+              You're a nitrogenous base on DNA! Look around - where do you think you are in the cell?
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <button
+              onClick={() => makeChoice(1, false, 'The cytoplasm is where proteins are made, but DNA lives elsewhere!')}
+              className={`p-4 border-4 border-teal-500 rounded-xl font-semibold transition-all hover:bg-teal-500 hover:text-white hover:-translate-y-1 ${
+                selectedChoices[1] === false ? 'bg-red-500 text-white border-red-500' : 'bg-white'
+              }`}
+              disabled={selectedChoices[1] !== null && selectedChoices[1] !== undefined}
+            >
+              Cytoplasm
+            </button>
+            <button
+              onClick={() => makeChoice(1, true, 'Exactly! DNA is safely stored in the nucleus, protected by the nuclear envelope!')}
+              className={`p-4 border-4 border-teal-500 rounded-xl font-semibold transition-all hover:bg-teal-500 hover:text-white hover:-translate-y-1 ${
+                selectedChoices[1] === true ? 'bg-green-500 text-white border-green-500' : 'bg-white'
+              }`}
+              disabled={selectedChoices[1] !== null && selectedChoices[1] !== undefined}
+            >
+              Nucleus
+            </button>
+            <button
+              onClick={() => makeChoice(1, false, 'Mitochondria have some DNA, but most genes are in the nucleus!')}
+              className={`p-4 border-4 border-teal-500 rounded-xl font-semibold transition-all hover:bg-teal-500 hover:text-white hover:-translate-y-1 ${
+                selectedChoices[1] === false ? 'bg-red-500 text-white border-red-500' : 'bg-white'
+              }`}
+              disabled={selectedChoices[1] !== null && selectedChoices[1] !== undefined}
+            >
+              Mitochondria
+            </button>
+          </div>
+
+          {feedback && (
+            <div className="bg-green-100 border-2 border-green-500 rounded-xl p-4 text-green-800 font-semibold">
+              {feedback}
+            </div>
+          )}
+
+          {showDescription && (
+            <div className="bg-white bg-opacity-80 p-6 rounded-xl border-l-4 border-teal-500 text-left">
+              <h2 className="text-2xl font-bold mb-4">🎯 Welcome to the Nucleus!</h2>
+              <p className="text-gray-700 mb-4">
+                <strong>Perfect choice!</strong> You are a <strong>nitrogenous base</strong> on a DNA strand in the nucleus! 
+                Think of DNA as the cell's recipe book 📚. Each recipe (gene) tells the cell how to make a specific protein.
+              </p>
+              <p className="text-gray-600">
+                🔍 <strong>Fun Fact:</strong> If you stretched out all the DNA in one human cell, it would be about 6 feet long!
+              </p>
+            </div>
+          )}
+
+          <div className="flex justify-between items-center">
+            <button
+              onClick={previousStep}
+              className="bg-gray-500 text-white px-6 py-3 rounded-full font-bold transition-all hover:-translate-y-1"
+              style={{ visibility: currentStep === 1 ? 'hidden' : 'visible' }}
+            >
+              Back
+            </button>
+            {showNext && (
+              <button
+                onClick={nextStep}
+                className="bg-gradient-to-r from-pink-500 to-red-500 text-white px-6 py-3 rounded-full font-bold transition-all hover:-translate-y-1"
+              >
+                Continue the Journey
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Step 1.5: Interactive RNA Polymerase */}
+      {currentStep === 1.5 && (
+        <div className="text-center space-y-6">
+          <div 
+            className="bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl p-8 min-h-80 flex flex-col items-center justify-center relative cursor-pointer"
+            onMouseMove={handleMouseMove}
+            onMouseLeave={() => setIsDragging(false)}
+          >
+            <div className="relative w-full h-32">
+              {/* DNA strand */}
+              <div className="absolute top-16 left-0 right-0 h-8 flex items-center justify-center">
+                <div className="flex items-center">
+                  <div className="w-20 h-8 bg-gradient-to-r from-blue-400 to-green-400 rounded-l-full flex items-center justify-center">
+                    <div className="text-white text-xs font-bold">🧬</div>
+                  </div>
+                  <div className="w-20 h-8 bg-gradient-to-r from-green-400 to-blue-400 flex items-center justify-center">
+                    <div className="text-white text-xs font-bold">🧬</div>
+                  </div>
+                </div>
+                
+                {/* Promoter region */}
+                <div className="relative mx-4">
+                  <div className={`w-32 h-8 bg-gradient-to-r from-yellow-400 to-orange-400 flex items-center justify-center rounded border-2 ${hasFoundPromoter ? 'border-green-500 animate-pulse' : 'border-red-500'}`}>
+                    <div className="text-white text-xs font-bold">PROMOTER</div>
+                  </div>
+                  <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-2 py-1 rounded text-xs font-bold">
+                    Drop Here!
+                  </div>
+                  {hasFoundPromoter && (
+                    <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-green-600 text-xs font-bold animate-bounce">
+                      ✅ Bound!
+                    </div>
+                  )}
+                </div>
+                
+                <div className="flex items-center">
+                  <div className="w-20 h-8 bg-gradient-to-r from-blue-400 to-green-400 flex items-center justify-center">
+                    <div className="text-white text-xs font-bold">🧬</div>
+                  </div>
+                  <div className="w-20 h-8 bg-gradient-to-r from-green-400 to-blue-400 rounded-r-full flex items-center justify-center">
+                    <div className="text-white text-xs font-bold">🧬</div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Draggable RNA Polymerase */}
+              <div 
+                className={`absolute w-16 h-12 bg-purple-600 rounded-lg flex flex-col items-center justify-center cursor-grab select-none ${isDragging ? 'cursor-grabbing scale-110 z-10' : ''} ${hasFoundPromoter ? 'animate-pulse' : ''}`}
+                style={{ 
+                  left: `${rnaPolymerasePosition.x}%`, 
+                  top: `${rnaPolymerasePosition.y}%`,
+                  transform: 'translate(-50%, -50%)'
+                }}
+                onMouseDown={(e) => {
+                  setIsDragging(true);
+                  e.preventDefault();
+                }}
+              >
+                <div className="text-white text-xs font-bold">RNA</div>
+                <div className="text-white text-xs font-bold">Pol</div>
+              </div>
+              
+              {!hasFoundPromoter && (
+                <div className="absolute -bottom-4 left-4 text-purple-600 text-sm font-bold animate-bounce">
+                  👆 Drag me to the promoter!
+                </div>
+              )}
+            </div>
+            
+            <div className="mt-8 bg-white bg-opacity-80 rounded-lg p-4">
+              <div className="text-lg font-bold mb-2 text-center text-purple-700">
+                🎮 Interactive Challenge!
+              </div>
+              <div className="text-center text-gray-700">
+                {!hasFoundPromoter ? 
+                  "Drag the RNA polymerase to the promoter region to begin transcription!" :
+                  "Great job! RNA polymerase is now bound and ready to transcribe!"
+                }
+              </div>
+            </div>
+          </div>
+
+          {feedback && (
+            <div className="bg-green-100 border-2 border-green-500 rounded-xl p-4 text-green-800 font-semibold animate-pulse">
+              {feedback}
+            </div>
+          )}
+
+          {showDescription && (
+            <div className="bg-purple-100 border-2 border-purple-400 rounded-xl p-4 text-purple-800 text-left">
+              <h3 className="font-bold mb-2">🎉 Transcription Initiated!</h3>
+              <p className="text-sm">RNA polymerase has successfully bound to the promoter and transcription can now begin!</p>
+            </div>
+          )}
+
+          <div className="flex justify-between items-center">
+            <button
+              onClick={previousStep}
+              className="bg-gray-500 text-white px-6 py-3 rounded-full font-bold transition-all hover:-translate-y-1"
+            >
+              Back
+            </button>
+            {showNext && (
+              <button
+                onClick={nextStep}
+                className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-6 py-3 rounded-full font-bold transition-all hover:-translate-y-1"
+              >
+                Watch Transcription Begin
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Step 2: Promoter Region with mRNA synthesis */}
+      {currentStep === 2 && (
+        <div className="text-center space-y-6">
+          <div className="bg-gradient-to-br from-yellow-100 to-orange-100 rounded-2xl p-8 min-h-80 flex flex-col items-center justify-center">
+            <div className="relative mb-6">
+              <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-sm">
+                RNA Polymerase
+              </div>
+              
+              <div className="flex items-center mb-2">
+                <span className="text-sm font-bold mr-2 text-gray-600">Template 3'</span>
+                <div className="flex space-x-1">
+                  <span className="w-8 h-8 bg-green-500 text-white rounded flex items-center justify-center text-sm font-bold">A</span>
+                  <span className="w-8 h-8 bg-blue-500 text-white rounded flex items-center justify-center text-sm font-bold">T</span>
+                  <span className="w-8 h-8 bg-red-500 text-white rounded flex items-center justify-center text-sm font-bold">G</span>
+                  <span className="w-8 h-8 bg-purple-500 text-white rounded flex items-center justify-center text-sm font-bold">C</span>
+                  <span className="w-8 h-8 bg-green-500 text-white rounded flex items-center justify-center text-sm font-bold">A</span>
+                </div>
+                <span className="text-sm font-bold ml-2 text-gray-600">5'</span>
+              </div>
+              
+              <div className="flex justify-center space-x-1 mb-2">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="w-8 text-center text-gray-400 text-xs">|</div>
+                ))}
+              </div>
+              
+              <div className="flex items-center mb-4">
+                <span className="text-sm font-bold mr-2 text-orange-600">mRNA 5'</span>
+                <div className="flex space-x-1">
+                  <span className="w-8 h-8 bg-orange-400 text-white rounded flex items-center justify-center text-sm font-bold">U</span>
+                  <span className="w-8 h-8 bg-orange-400 text-white rounded flex items-center justify-center text-sm font-bold">A</span>
+                  <span className="w-8 h-8 bg-orange-400 text-white rounded flex items-center justify-center text-sm font-bold">C</span>
+                  <span className="w-8 h-8 bg-orange-400 text-white rounded flex items-center justify-center text-sm font-bold animate-pulse">G</span>
+                  <span className="w-6 h-6 border-2 border-dashed border-orange-400 rounded flex items-center justify-center text-xs text-orange-400 animate-pulse">?</span>
+                </div>
+                <span className="text-sm font-bold ml-2 text-orange-600">3'</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white bg-opacity-90 p-6 rounded-xl border-l-4 border-orange-500">
+            <p className="text-lg font-semibold text-gray-800">
+              RNA polymerase is reading the DNA template and building complementary mRNA. What happens when it reaches the end of the gene?
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <button
+              onClick={() => makeChoice(2, false, 'The mRNA needs processing before it can leave!')}
+              className={`p-4 border-4 border-teal-500 rounded-xl font-semibold transition-all hover:bg-teal-500 hover:text-white hover:-translate-y-1 ${
+                selectedChoices[2] === false ? 'bg-red-500 text-white border-red-500' : 'bg-white'
+              }`}
+              disabled={selectedChoices[2] !== null && selectedChoices[2] !== undefined}
+            >
+              mRNA leaves immediately
+            </button>
+            <button
+              onClick={() => makeChoice(2, true, 'Exactly! The raw mRNA transcript needs editing before it can be used!')}
+              className={`p-4 border-4 border-teal-500 rounded-xl font-semibold transition-all hover:bg-teal-500 hover:text-white hover:-translate-y-1 ${
+                selectedChoices[2] === true ? 'bg-green-500 text-white border-green-500' : 'bg-white'
+              }`}
+              disabled={selectedChoices[2] !== null && selectedChoices[2] !== undefined}
+            >
+              mRNA gets processed
+            </button>
+            <button
+              onClick={() => makeChoice(2, false, 'Translation happens later on ribosomes!')}
+              className={`p-4 border-4 border-teal-500 rounded-xl font-semibold transition-all hover:bg-teal-500 hover:text-white hover:-translate-y-1 ${
+                selectedChoices[2] === false ? 'bg-red-500 text-white border-red-500' : 'bg-white'
+              }`}
+              disabled={selectedChoices[2] !== null && selectedChoices[2] !== undefined}
+            >
+              Translation begins
+            </button>
+          </div>
+
+          {feedback && (
+            <div className="bg-green-100 border-2 border-green-500 rounded-xl p-4 text-green-800 font-semibold">
+              {feedback}
+            </div>
+          )}
+
+          {showDescription && (
+            <div className="bg-white bg-opacity-80 p-6 rounded-xl border-l-4 border-teal-500 text-left">
+              <h2 className="text-2xl font-bold mb-4">📝 mRNA Processing Required!</h2>
+              <p className="text-gray-700">
+                <strong>Perfect!</strong> The freshly made mRNA needs processing before it can be used to make proteins. 
+                This includes removing introns and adding protective caps!
+              </p>
+            </div>
+          )}
+
+          <div className="flex justify-between items-center">
+            <button
+              onClick={previousStep}
+              className="bg-gray-500 text-white px-6 py-3 rounded-full font-bold transition-all hover:-translate-y-1"
+            >
+              Back
+            </button>
+            {showNext && (
+              <button
+                onClick={nextStep}
+                className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-6 py-3 rounded-full font-bold transition-all hover:-translate-y-1"
+              >
+                Continue Adventure
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  </div>
+</div>
+```
+
+);
+};
+
+export default ProteinSynthesisApp;
